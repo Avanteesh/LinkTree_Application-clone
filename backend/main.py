@@ -40,7 +40,7 @@ def authenticate(data: UserMetaData):
         return query
 
 def createJWTtoken(data: dict):
-    copied = {'sup': data.copy(), 'exp':  datetime.now() + timedelta(minutes=30)}
+    copied = {'sup': data.copy(), 'exp':  datetime.now() + timedelta(minutes=60)}
     encoded = jwt.encode(copied, getenv('SECRET_KEY'),algorithm='HS256')
     return encoded
     
@@ -93,8 +93,10 @@ async def getUserData(request: Request, token: str):
         ).first()
     if user_data is None:
         return {'status': 'failed'}
-    jsonified = zip(('user_id', 'username', 'profile_picture', 'bio'), user_data)
-    return {'status':'success', 'data': jsonified}
+    jsonified = dict(zip(('user_id', 'username', 'profile_picture', 'bio'), user_data))
+    return {
+      'status':'success','data': jsonified
+    }
 
 @app.get("/api/profile")
 async def getProfileDetails(request: Request, token: str):
@@ -123,6 +125,32 @@ async def getLinks(request: Request, token: str):
       }
     }
 
+@app.get("/api/getlinktree")
+async def getLinkTree(request: Request, username: str):
+    linktree_details, links = None, None
+    with Session(dbengine) as session:
+        linktree_details = session.exec(
+          select(User.username,User.profile_picture, User.bio,LinkTree.background_image,
+            LinkTree.background_color,LinkTree.linktree_id).where(
+            LinkTree.linktreename == username
+          )
+        ).first()
+        if linktree_details is not None:
+            linktree_links = session.exec(
+              select(LinkTreeURLS.linktext, LinkTreeURLS.url).where(
+                LinkTreeURLS.link_id == linktree_details[5]
+              )
+            ).fetchall()
+    if linktree_details is None:
+        return {'status': 'failed'}
+    linktree_details = dict(zip(('username', 'profile_picture','bio','background_image','background_color'), linktree_details))
+    linktree_links = [dict(zip(('linktext','url'), item)) for item in linktree_links]
+    return {
+      'status': 'success', 'data': {
+        'details': linktree_details,'links': linktree_links
+      }
+    }
+
 @app.put("/api/updatelinktree")
 async def updateLinkTree(request: Request, tree_id: str, newname: str):
     with Session(dbengine) as session:
@@ -137,8 +165,7 @@ async def updateLinkTree(request: Request, tree_id: str, newname: str):
 @app.put("/api/addnewlink")
 async def addNewLinkToLinkTree(request: Request, linktree_id: str, name: str, url: str):
     with Session(dbengine) as session:
-        newlink = LinkTreeURLS(link_id=linktree_id,linktext=name, url=url)
-        session.add(newlink)
+        session.add(LinkTreeURLS(link_id=linktree_id,linktext=name,url=url))
         session.commit()
     return {'status': 'success'}
 

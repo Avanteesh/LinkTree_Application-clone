@@ -4,6 +4,7 @@ import {SignUp, Login} from './UserAuth.jsx';
 import { createRoot } from 'react-dom/client';
 import Error404Note from './Error404.jsx';
 import Profile from './Profile.jsx';
+import UserLinkTree from './UserLinkTree.jsx';
 import Navbar from './Navbar.jsx';
 import Templates from './Templates.jsx';
 import {HeaderFooter, WhyLinkTree,BottomSection,AnalyzeBanner} from './HomeFooter.jsx';
@@ -75,6 +76,7 @@ function App()  {
         <Route path="/signin" element={<AuthUser child={<SignUp />} />} />
         <Route path="/note" element={<Error404Note />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/tree/:linktreename" element={<UserLinkTree />} />
       </Routes>  
     </BrowserRouter>
   );

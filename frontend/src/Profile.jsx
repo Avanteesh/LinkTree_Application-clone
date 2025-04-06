@@ -89,7 +89,7 @@ function DisplayLinks(props)  {
       <>
         {props.linkElements.map(({id, link_id, linktext,url}, i) => {
           return (
-            <div className={LINKBOX_COLORS[i % LINKBOX_COLORS.length]} key={i} style={{margin: '.3em'}}>
+            <div className={LINKBOX_COLORS[i % LINKBOX_COLORS.length]} key={i} style={{margin: '.3em',boxShadow: '0 0 .8em .8px'}}>
               <div className="card-body">
                 <h5 className="card-title">{linktext}</h5>  
                 <div className="input-group mb-3">
@@ -145,9 +145,6 @@ function DisplayLinks(props)  {
           <button className="btn btn-outline-success" onClick={addNewLinkToLinkTree}>Add new link</button>
         </div>
       </div>
-      <div className="col" style={{padding: '.1em'}}>
-        <hr /> 
-      </div>
       <LinkElements />
     </>
   );
@@ -166,6 +163,7 @@ export default function Profile()  {
         setURLData(get_data.data);
       });
     }
+    console.log(urlData);
     return () => { return; }
   }, [urlData, currentPage]);
   const mouseHoverHandler = (evt) => {
@@ -193,17 +191,17 @@ export default function Profile()  {
         </ul>
       </div>
       <div className="row">
-        <div className="col d-grid" style={{gridTemplateColumns: 'repeat(1,1fr)', padding: '1em',placeItems:'center',overflow: 'hidden, scroll'}}>
+        <div className="col d-grid" style={{gridTemplateColumns: 'repeat(1,1fr)',gap: '.9em', padding: '.9em',placeItems:'center'}}>
           {(currentPage === "Links")? (<DisplayLinks linkElements={(urlData === null)?[]:urlData.links} 
             linkTreeDetail={(urlData === null)?null:urlData.details} />)
           :(<h1>hi!</h1>)}
         </div>
-        <div className="col" style={{padding: '1em'}}>
+        <div className="col d-grid" style={{padding: '1em',margin: '1em',placeItems:'center'}}>
           {(urlData === null)? (<p aria-hidden="true">
               <span className="placeholder col-6"></span>
             </p>):(<TextEditor linkTreeName={urlData.details.linktreename} 
               linktreeid={urlData.details.linktree_id}/>)}
-          <iframe></iframe>
+          <iframe className="phone-screen-view" src={`${(urlData === null)? '':'/tree/'+urlData.details.linktreename}`}></iframe>
         </div>
       </div>
     </div>
