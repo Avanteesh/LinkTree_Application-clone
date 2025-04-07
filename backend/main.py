@@ -177,4 +177,15 @@ async def removeLinkFromLinkTree(request: Request, linktree_id: str, linkid: str
         ).where(LinkTreeURLS.id == linkid))
         session.commit()
     return {'status': 'success'}
+
+@app.patch("/api/renamelinks")
+async def renameLinkInLinkTree(request: Request, data: dict[str, str]):
+    with Session(dbengine) as session:
+        session.exec(update(LinkTreeURLS).where(
+            LinkTreeURLS.id == data['l_id']
+          ).values(linktext = data['LinkName']
+          ).values(url=data['Url'])
+        )
+        session.commit()
+    return {'status': 'success'}
     

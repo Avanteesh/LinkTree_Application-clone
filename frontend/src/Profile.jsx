@@ -1,4 +1,5 @@
 import {useState, useEffect} from 'react';
+import Appearance from './Appearance.jsx';
 
 function TextEditor(props)  {
   const [linktreename, setLinkTreeName] = useState("");
@@ -88,15 +89,53 @@ function DisplayLinks(props)  {
     return (
       <>
         {props.linkElements.map(({id, link_id, linktext,url}, i) => {
+          const [readMode, setIsReadMode] = useState(true);
+          const [linkDetails, setLinkDetails] = useState({LinkName: linktext, Url: url})
+          function updateLinkOfLinkTree(evt)  {
+            if (linkDetails.LinkName === linktext && linkDetails.Url === url)  
+              return;
+            try {
+              const _url = new URL(linkDetails.Url);
+              if (linkDetails.LinkName.split("").find((item) => item === " ") === " ")  
+                throw new TypeError("The Link name is not valid!");
+              fetch("http://127.0.0.1:8000/api/renamelinks", {
+                method: 'PATCH', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({l_id: evt.target.id, ...linkDetails})
+              }).then(
+                (response) => response.json()
+              ).then((result) => {
+                if (result.status === 'success')  {
+                  setIsReadMode(true);
+                  window.location.reload();
+                }
+              }).catch((e) => {
+                throw e;
+              })
+            } catch(e)  {
+              window.alert("The Url must be valid, and links name must have no spaces!"); 
+              window.location.reload();
+            }
+          }
           return (
             <div className={LINKBOX_COLORS[i % LINKBOX_COLORS.length]} key={i} style={{margin: '.3em',boxShadow: '0 0 .8em .8px'}}>
               <div className="card-body">
-                <h5 className="card-title">{linktext}</h5>  
+                {(readMode === true)? (<h5 className="card-title">{linkDetails.LinkName}</h5>)
+                :(<input type="text" className="form-control" placeholder="enter linkname" value={linkDetails.LinkName} 
+                  onChange={(evt) => {
+                    const copied = {...linkDetails};
+                    setLinkDetails({LinkName: evt.target.value, Url: copied.Url})  
+                  }}/>)}  
                 <div className="input-group mb-3">
                   <span className="input-group-text" id="basic-addon1">&#128279;</span>
-                  <input type="text" className="form-control" placeholder="Username" aria-label="Username" value={url} aria-describedby="basic-addon1" readOnly={true}/>
+                  <input type="text" className="form-control" style={{color: '#3f6cb5'}} placeholder="enter a url" value={linkDetails.Url} readOnly={readMode}
+                    onChange={(evt) => {
+                      const copied = {...linkDetails};
+                      setLinkDetails({LinkName: copied.LinkName, Url: evt.target.value});
+                    }}/>
                 </div>
                 <button className="btn btn-outline-danger" id={id} onClick={deleteLinkWithId}>&#128465;</button>
+                {(readMode)? (<button className="btn btn-outline-warning" id={id} onClick={() => setIsReadMode(false)}>&#128394;</button>)
+                :(<button className="btn btn-outline-success" id={id} onClick={updateLinkOfLinkTree}>save</button>)}
               </div>  
             </div>
           );
@@ -163,7 +202,6 @@ export default function Profile()  {
         setURLData(get_data.data);
       });
     }
-    console.log(urlData);
     return () => { return; }
   }, [urlData, currentPage]);
   const mouseHoverHandler = (evt) => {
@@ -178,15 +216,15 @@ export default function Profile()  {
         <ul className="nav nav-tabs">
           <li className="nav-item" onClick={() => setCurrentPage("Links")} 
             onMouseOver={mouseHoverHandler} onMouseOut={mouseOutHandler}>
-            <a className={(currentPage === "Links")? "nav-link active":"nav-link"}>Links</a>
+            <a className={(currentPage === "Links")? "nav-link active":"nav-link"} href="">Links</a>
           </li>
           <li className="nav-item" onClick={() => setCurrentPage("Appearance")}
             onMouseOver={mouseHoverHandler} onMouseOut={mouseOutHandler}>
-            <a className={(currentPage === "Appearance")? "nav-link active":"nav-link"}>Appearance</a>
+            <a className={(currentPage === "Appearance")? "nav-link active":"nav-link"} href="#appearance">Appearance</a>
           </li>
           <li className="nav-item" onClick={() => setCurrentPage("Analytics")}
             onMouseOver={mouseHoverHandler} onMouseOut={mouseOutHandler}>
-            <a className={(currentPage === "Analytics")? "nav-link active":"nav-link"}>Analytics</a>
+            <a className={(currentPage === "Analytics")? "nav-link active":"nav-link"} href="#analytics">Analytics</a>
           </li>
         </ul>
       </div>
@@ -194,14 +232,16 @@ export default function Profile()  {
         <div className="col d-grid" style={{gridTemplateColumns: 'repeat(1,1fr)',gap: '.9em', padding: '.9em',placeItems:'center'}}>
           {(currentPage === "Links")? (<DisplayLinks linkElements={(urlData === null)?[]:urlData.links} 
             linkTreeDetail={(urlData === null)?null:urlData.details} />)
-          :(<h1>hi!</h1>)}
+          :(currentPage === "Appearance")? (<Appearance details={(urlData === null)?null:urlData.details}/>)
+          :(<h1>hello</h1>)}
         </div>
         <div className="col d-grid" style={{padding: '1em',margin: '1em',placeItems:'center'}}>
           {(urlData === null)? (<p aria-hidden="true">
               <span className="placeholder col-6"></span>
             </p>):(<TextEditor linkTreeName={urlData.details.linktreename} 
               linktreeid={urlData.details.linktree_id}/>)}
-          <iframe className="phone-screen-view" src={`${(urlData === null)? '':'/tree/'+urlData.details.linktreename}`}></iframe>
+          {(urlData === null)? (<></>):
+          <iframe className="phone-screen-view" src={`/tree/${urlData.details.linktreename}`}></iframe>}
         </div>
       </div>
     </div>
