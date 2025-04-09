@@ -1,9 +1,9 @@
 # LinkTree app clone! 
 
-<h1>Linktree allows you to embed all social media links into one webpage which can be viewed by anybody!</h1>
+<h4>Linktree allows you to embed all social media links into one webpage which can be viewed by anybody!</h4>
 
 <p>
-  This is my first time using React on a project with a Backend server running in python through fastapi.
+  This is my first time using React on a project with a Backend server running in python through fastapi with sqlite for the database which does a fine job!
 </p>
 
 <div>
