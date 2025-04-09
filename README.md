@@ -13,15 +13,12 @@
   <img height="240" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/sqlite/sqlite-original.svg" />
 </div>
 
-<div>
-  Run backend server of application
-  ```
-   $: fastapi dev main.py 
-  ```
-  Run client:
-  ```
-   $: npm install
-   $: npm run dev
-  ```
-</div>
-
+Run backend server of application
+```
+$: fastapi dev main.py 
+```
+Run client:
+```
+$: npm install
+$: npm run dev
+```
