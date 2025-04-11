@@ -4,6 +4,7 @@ import {useState, useEffect} from 'react';
 export default function UserLinkTree()  {
   const params = useParams();
   const [linkTree, setLinkTreeData] = useState(null);
+  const [isviewed, setIsViewed] = useState(false);
   useEffect(() => {
     if (linkTree === null)  {
       fetch(`http://127.0.0.1:8000/api/getlinktree?username=${params.linktreename}`).then(
@@ -21,8 +22,18 @@ export default function UserLinkTree()  {
       else if (linkTree.details.background_image !== null) 
         document.body.style.background = linkTree.details.background_image;
     }
+    if (!isviewed)  {
+      setTimeout(() => {
+        // if user stays in the page for 30 seconds it counts a view
+        fetch(`http://127.0.0.1:8000/api/updateView?linktree=${params.linktreename}`,{
+          method: 'PUT', headers: {'Content-Type': 'application/json'}
+        }).then((res) => res.json()).then((item) => {
+          setIsViewed(true);
+        });
+      }, 30000);
+    }
     return () => { return; }
-  }, [linkTree]);
+  }, [linkTree,isviewed]);
   /* using skeletons to display dynamic loading while fetching content!*/
   return (
     <div className="container d-grid" style={{placeItems:'center',height: '70vh'}}>

@@ -83,7 +83,10 @@ async def loginUser(request: Request, data: UserMetaData):
 
 @app.get("/api/user")
 async def getUserData(request: Request, token: str):
-    decoded_jwt = jwt.decode(token, getenv('SECRET_KEY'), algorithms=["HS256"])
+    try:
+        decoded_jwt = jwt.decode(token, getenv('SECRET_KEY'), algorithms=["HS256"])
+    except JWTError:
+        return {'status': 'failed', 'message': 'Unauthorized!'}
     user_data = None
     with Session(dbengine) as session:
         user_data = session.exec(
@@ -98,14 +101,13 @@ async def getUserData(request: Request, token: str):
       'status':'success','data': jsonified
     }
 
-@app.get("/api/profile")
-async def getProfileDetails(request: Request, token: str):
-    decoded_jwt = jwt.decode(token, getenv('SECRET_KEY'), algorithms=["HS256"])
-    return {"data": "haha!"} # work in progress!
-
 @app.get("/api/user/links")
 async def getLinks(request: Request, token: str):
-    user_data = jwt.decode(token, getenv('SECRET_KEY'),algorithms=["HS256"])
+    user_data = None
+    try:
+        user_data = jwt.decode(token, getenv('SECRET_KEY'),algorithms=["HS256"])
+    except JWTError:
+        return {'status': 'failed', 'message': 'Unauthorized!'}
     ltree_details, linktree_links = None, None
     with Session(dbengine) as session:
         ltree_details = session.exec(
@@ -188,4 +190,14 @@ async def renameLinkInLinkTree(request: Request, data: dict[str, str]):
         )
         session.commit()
     return {'status': 'success'}
-    
+
+@app.put("/api/updateView")
+async def updateLinkTreeView(request: Request, linktree: str):
+    with Session(dbengine) as session:
+        session.exec(
+          update(LinkTree).where(
+            LinkTree.linktreename == linktree
+          ).values(views = LinkTree.views + 1)
+        )
+        session.commit()
+    return {'status': 'success'}

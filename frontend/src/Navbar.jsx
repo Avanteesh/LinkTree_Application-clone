@@ -1,6 +1,8 @@
 import DisplayProfile from './DisplayProfile.jsx';
+import {useState} from 'react';
 
 export default function Navbar(props)  {
+  const [searchQuery, setSearchQuery] = useState("");
   const LoginAndSignUpBtn = () => {
     return (
       <>
@@ -12,6 +14,10 @@ export default function Navbar(props)  {
         </div>
       </>
     );
+  }
+  const searchLinkTree = (evt) => {
+    evt.preventDefault();
+    window.location.href = `/tree/${searchQuery}`;
   }
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark" style={{boxShadow: '0 0 .8em .1em'}}>
@@ -31,8 +37,9 @@ export default function Navbar(props)  {
             }}>why?</a>
           </li>
           <li className="nav-item">
-            <form className="d-flex" role="search">
-              <input className="form-control me-2" type="search" placeholder="Search a Linktree..." />
+            <form className="d-flex" onSubmit={searchLinkTree}>
+              <input className="form-control me-2" type="search" placeholder="Search a Linktree..." 
+                value={searchQuery} onChange={(evt) => setSearchQuery(evt.target.value)}/>
               <button className="btn btn-outline-primary" type="submit">Search</button>
             </form>
           </li>
